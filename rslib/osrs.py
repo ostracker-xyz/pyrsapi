@@ -82,9 +82,9 @@ SKILLS = [
     "Zalcano",
     "Zulrah",
 ]
+HISCORES_PATH = "m=hiscore_oldschool/index_lite.ws"
 
 
 def hiscores(player):
-    path = "m=hiscore_oldschool/index_lite.ws"
-    with rslib.util.request(path, player=player) as resp:
+    with rslib.util.request(HISCORES_PATH, player=player) as resp:
         return rslib.util.parse_scores(resp.text, SKILLS)
