@@ -63,7 +63,10 @@ def parse_scores(text, skills):
             LOGGER.debug("ignoring skill idx=%d", idx)
             continue
 
-        scores[skill[0]] = {
+        if not isinstance(skill, str):
+            skill = skill[0]
+
+        scores[skill] = {
             "rank": rank,
             "level": level,
             "exp": exp,
