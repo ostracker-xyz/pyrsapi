@@ -5,7 +5,7 @@ import urllib.parse
 
 import requests
 
-from rslib import API_URL, LOGGER, DEFAULT_RETRIES, DEFAULT_TIMEOUT
+from rsapi import API_URL, LOGGER, DEFAULT_RETRIES, DEFAULT_TIMEOUT
 
 
 def request(path, _retries=DEFAULT_RETRIES, _timeout=DEFAULT_TIMEOUT, **query):

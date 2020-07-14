@@ -1,8 +1,8 @@
 import responses
 import pytest
 
-import rslib
-import rslib.osrs
+import rsapi
+import rsapi.osrs
 
 
 TEST_DATA = """\
@@ -90,13 +90,13 @@ TEST_DATA = """\
 @pytest.yield_fixture
 def mock_hiscores():
     with responses.RequestsMock() as rsps:
-        mock_url = f"{rslib.API_URL}/{rslib.osrs.HISCORES_PATH}"
+        mock_url = f"{rsapi.API_URL}/{rsapi.osrs.HISCORES_PATH}"
         rsps.add(responses.GET, mock_url, body=TEST_DATA, status=200)
         yield rsps
 
 
 def test_hiscores(mock_hiscores):
-    scores = rslib.osrs.hiscores("jakop")
+    scores = rsapi.osrs.hiscores("jakop")
     assert scores["Overall"]["level"] == 828, "Overall score mismatch"
     assert scores["Overall"]["exp"] == 11351102, "Overall exp mismatch"
     assert scores["Overall"]["rank"] == 1498141, "Overall rank mismatch"

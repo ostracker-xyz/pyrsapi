@@ -1,4 +1,4 @@
-import rslib.util
+import rsapi.util
 
 
 SKILLS = [
@@ -86,5 +86,5 @@ HISCORES_PATH = "m=hiscore_oldschool/index_lite.ws"
 
 
 def hiscores(player):
-    with rslib.util.request(HISCORES_PATH, player=player) as resp:
-        return rslib.util.parse_scores(resp.text, SKILLS)
+    with rsapi.util.request(HISCORES_PATH, player=player) as resp:
+        return rsapi.util.parse_scores(resp.text, SKILLS)

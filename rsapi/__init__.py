@@ -5,7 +5,7 @@ DEFAULT_TIMEOUT = 60  #  timeout for a single request
 DEFAULT_RETRIES = 3
 
 API_URL = "https://secure.runescape.com"
-LOGGER = logging.getLogger("rslib")
+LOGGER = logging.getLogger("rsapi")
 
 
 def diff_scores(baseline, scores):
