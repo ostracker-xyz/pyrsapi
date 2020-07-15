@@ -1,3 +1,4 @@
+import math
 import logging
 
 
@@ -43,3 +44,9 @@ def diff_scores(baseline, scores):
             deltas[skill_name] = delta
 
     return deltas
+
+
+def level2exp(level):
+    return math.floor(
+        (1/4)*sum(math.floor(i + 300 * 2**(i/7)) for i in range(1,level))
+    )
