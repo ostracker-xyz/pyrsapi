@@ -31,8 +31,8 @@ def request(path, _retries=DEFAULT_RETRIES, _timeout=DEFAULT_TIMEOUT, **query):
             resp.status_code == requests.codes["ok"]):
             return resp
 
-        # Each iteration, backoff timer grows by 3**i, but at max req roof - time taken
-        time.sleep(min(3**i, _timeout-delta))
+        # Each iteration, backoff timer grows by 2**i, but at max req roof - time taken
+        time.sleep(min(2**i, _timeout-delta))
     raise Exception("hiscore request timed out")
 
 
