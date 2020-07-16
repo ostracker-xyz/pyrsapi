@@ -93,7 +93,7 @@ def parse_news(text):
             "description": node.findtext("./description"),
             "category": node.findtext("./category"),
             "url": node.findtext("./link"),
-            "updated": node.find("./pubDate"),
+            "updated": parse_datetime(node.find("./pubDate")),
             "image": parse_image(node.find("enclosure")),
             "guid": node.findtext("guid"),
         }
