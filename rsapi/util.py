@@ -95,6 +95,7 @@ def parse_news(text):
             "url": node.findtext("./link"),
             "updated": node.find("./pubDate"),
             "image": parse_image(node.find("enclosure")),
+            "guid": node.findtext("guid"),
         }
 
     def parse_channel(node):
