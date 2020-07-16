@@ -83,8 +83,14 @@ SKILLS = [
     "Zulrah",
 ]
 HISCORES_PATH = "m=hiscore_oldschool/index_lite.ws"
+NEWS_PATH = "m=news/latest_news.rss"
 
 
 def hiscores(player):
     with rsapi.util.request(HISCORES_PATH, player=player) as resp:
         return rsapi.util.parse_scores(resp.text, SKILLS)
+
+
+def news():
+    with rsapi.util.request(NEWS_PATH, oldschool=True) as resp:
+        return rsapi.util.parse_news(resp.text)

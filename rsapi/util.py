@@ -1,7 +1,9 @@
 import csv
 import time
 import math
+import email.utils
 import urllib.parse
+from xml.etree import ElementTree
 
 import requests
 
@@ -75,3 +77,36 @@ def parse_scores(text, skills):
     return scores
 
 
+def parse_news(text):
+    def parse_datetime(node):
+        return int(email.utils.mktime_tz(email.utils.parsedate_tz(node.text)))
+
+    def parse_image(node):
+        return {
+            "type": node.attrib.get("type"),
+            "url": node.attrib.get("url"),
+        }
+
+    def parse_item(node):
+        return {
+            "title": node.findtext("./title"),
+            "description": node.findtext("./description"),
+            "category": node.findtext("./category"),
+            "url": node.findtext("./link"),
+            "updated": node.find("./pubDate"),
+            "image": parse_image(node.find("enclosure")),
+        }
+
+    def parse_channel(node):
+        return {
+            "title": node.findtext("./title"),
+            "description": node.findtext("./description"),
+            "ttl": int(node.findtext("./ttl")),
+            "updated": parse_datetime(node.find("./lastBuildDate")),
+            "items": [
+                parse_item(item) for item in node.findall("./item")
+            ]
+        }
+
+    root = ElementTree.fromstring(text)
+    return parse_channel(root.find("./channel"))
