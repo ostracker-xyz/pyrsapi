@@ -39,7 +39,7 @@ SKILLS = [
     "LMS - Rank",
     "Abyssal Sire",
     "Alchemical Hydra",
-    "Barrows Chests",
+    ("Barrows Chests",          "Barrows",         ""),
     "Bryophyta",
     "Callisto",
     "Cerberus",
