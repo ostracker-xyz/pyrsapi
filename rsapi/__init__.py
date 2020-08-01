@@ -2,8 +2,8 @@ import math
 import logging
 
 
-DEFAULT_TIMEOUT = 30  #  timeout for a single request
-DEFAULT_RETRIES = 5
+DEFAULT_TIMEOUT = 20  #  timeout for a single request
+DEFAULT_RETRIES = 3
 
 API_URL = "https://secure.runescape.com"
 LOGGER = logging.getLogger("rsapi")
