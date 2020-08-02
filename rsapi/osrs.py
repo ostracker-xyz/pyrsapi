@@ -91,6 +91,7 @@ SKILLS = [
 ]
 HISCORES_PATH = "m=hiscore_oldschool/index_lite.ws"
 NEWS_PATH = "m=news/latest_news.rss"
+GE_PATH = "m=itemdb_oldschool/api/catalogue/detail.json"
 
 
 class ItemNotFound(Exception):
@@ -134,11 +135,29 @@ def items(item_q: typing.Union[int, str]) -> typing.List[ItemProperties]:
     return ret
 
 
-def alch(item_q: typing.Union[int, str]) -> dict:
+def alch(item_q: typing.Union[int, str], maxitems=10) -> dict:
     return {
         i.id: {
             "name": i.name,
             "highalch": i.highalch,
             "lowalch": i.lowalch,
-        } for i in items(item_q)
+        } for i in items(item_q)[:maxitems]
     }
+
+
+def ge(item_q: typing.Union[int, str], maxitems=10) -> dict:
+    def parse(data):
+        item = data["item"]
+        return {
+            "current": item["current"],
+            "today": item["today"],
+            "day30": item["day30"],
+            "day90": item["day90"],
+            "day180": item["day180"],
+        }
+
+    def get(id_):
+        with rsapi.util.request(GE_PATH, item=id_) as resp:
+            return parse(resp.json())
+
+    return {i.id: get(i.id) for i in items(item_q)[:maxitems]}
