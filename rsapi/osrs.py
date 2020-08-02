@@ -158,7 +158,7 @@ def _ge_price_normalize(price):
         try:
             multiplier = suffixes[price[-1]]
             price = multiplier * float(price[:-1])
-        except IndexError:
+        except KeyError:
             pass
     return price
 
