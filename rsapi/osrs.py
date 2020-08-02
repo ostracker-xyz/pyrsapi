@@ -110,7 +110,8 @@ def news() -> dict:
         return rsapi.util.parse_news(resp.text)
 
 
-def items(item_q: typing.Union[int, str]) -> typing.List[ItemProperties]:
+def items(item_q: typing.Union[int, str],
+          maxitems: int = 10) -> typing.List[ItemProperties]:
     ret = []
 
     if isinstance(item_q, int):
@@ -132,32 +133,52 @@ def items(item_q: typing.Union[int, str]) -> typing.List[ItemProperties]:
     if not ret:
         raise ItemNotFound(f"No items found", item_q)
 
-    return ret
+    return ret[:maxitems]
 
 
-def alch(item_q: typing.Union[int, str], maxitems=10) -> dict:
+def alch(item_q: typing.Union[int, str], maxitems: int = 10) -> dict:
     return {
         i.id: {
             "name": i.name,
             "highalch": i.highalch,
             "lowalch": i.lowalch,
-        } for i in items(item_q)[:maxitems]
+        } for i in items(item_q, maxitems=maxitems)
     }
 
 
-def ge(item_q: typing.Union[int, str], maxitems=10) -> dict:
-    def parse(data):
-        item = data["item"]
-        return {
-            "current": item["current"],
-            "today": item["today"],
-            "day30": item["day30"],
-            "day90": item["day90"],
-            "day180": item["day180"],
+def _ge_parse(data):
+    item = data["item"]
+    return {
+        "current": item["current"],
+        "today": item["today"],
+        "day30": item["day30"],
+        "day90": item["day90"],
+        "day180": item["day180"],
+    }
+
+
+def _ge_get(id_):
+    with rsapi.util.request(GE_PATH, item=id_) as resp:
+        return _ge_parse(resp.json())
+
+
+def ge(item_q: typing.Union[int, str], maxitems: int = 10) -> dict:
+    return {i.id: _ge_get(i.id) for i in items(item_q, maxitems=maxitems)}
+
+
+def price(item_q: typing.Union[int, str], maxitems=10) -> dict:
+    ret = {}
+    for item in items(item_q, maxitems=maxitems):
+        entry = {
+            "name": item.name,
+            "tradeable": item.tradeable,
+            "tradeable_on_ge": item.tradeable_on_ge,
+            "alch": {
+                "highalch": item.highalch,
+                "lowalch": item.lowalch,
+            },
         }
-
-    def get(id_):
-        with rsapi.util.request(GE_PATH, item=id_) as resp:
-            return parse(resp.json())
-
-    return {i.id: get(i.id) for i in items(item_q)[:maxitems]}
+        if item.tradeable_on_ge:
+            entry["ge"] = _ge_get(item.id)
+        ret[item.id] = entry
+    return ret
