@@ -163,7 +163,13 @@ def _ge_get(id_):
 
 
 def ge(item_q: typing.Union[int, str], maxitems: int = 10) -> dict:
-    return {i.id: _ge_get(i.id) for i in items(item_q, maxitems=maxitems)}
+    return {
+        i.id: {
+            "name": i.name,
+            "ge": _ge_get(i.id),
+        },
+        for i in items(item_q, maxitems=maxitems) if i.tradeable_on_ge
+    }
 
 
 def price(item_q: typing.Union[int, str], maxitems=10) -> dict:
