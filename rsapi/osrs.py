@@ -98,7 +98,7 @@ class ItemNotFound(Exception):
         self.query = query
 
 
-def hiscores(player):
+def hiscores(player: str):
     with rsapi.util.request(HISCORES_PATH, player=player) as resp:
         return rsapi.util.parse_scores(resp.text, SKILLS)
 
