@@ -94,7 +94,7 @@ NEWS_PATH = "m=news/latest_news.rss"
 GE_PATH = "m=itemdb_oldschool/api/catalogue/detail.json"
 
 
-class ItemNotFound(Exception):
+class ItemError(Exception):
     def __init__(self, msg, query):
         self.msg = msg
         self.query = query
@@ -131,7 +131,7 @@ def items(item_q: typing.Union[int, str],
         raise Exception("Bad argument type")
 
     if not ret:
-        raise ItemNotFound(f"No items found", item_q)
+        raise ItemError("No items found", item_q)
 
     return ret[:maxitems]
 
@@ -186,12 +186,16 @@ def _ge_get(id_):
 
 
 def ge(item_q: typing.Union[int, str], maxitems: int = 10) -> dict:
+    items_ = [i for i in items(item_q, maxitems=maxitems) if i.tradeable_on_ge]
+    if not items_:
+        raise ItemError("No tradeable items found", item_q)
+
     return {
         i.id: {
             "name": i.name,
             "ge": _ge_get(i.id),
         }
-        for i in items(item_q, maxitems=maxitems) if i.tradeable_on_ge
+        for i in items_
     }
 
 
