@@ -132,3 +132,13 @@ def items(item_q: typing.Union[int, str]) -> typing.List[ItemProperties]:
         raise ItemNotFound(f"No items found", item_q)
 
     return ret
+
+
+def alch(item_q: typing.Union[int, str]) -> dict:
+    return {
+        i.id: {
+            "name": i.name,
+            "highalch": i.highalch,
+            "lowalch": i.lowalch,
+        } for i in items(item_q)
+    }
