@@ -1,6 +1,12 @@
+import re
+import typing
+
+from osrsbox import items_api
+
 import rsapi.util
 
 
+ITEMS = items_api.load()
 SKILLS = [
     ("Overall",                 "Overall", "data:image/gif;base64,R0lGODlhEAAQAIcAAAAAAP///wgICNEYGnYPEXYQEZcVGHsSE8dUVaYXG4QTGIQTF3YRFWoPElQMD00LDYoUGIMTF3oSFn8TF3IRFGMPElAMD08MDm8RFFsOEZopLGpAQcR3eqGFhksLDkQKDTcIC0gLDkAKDUQLDlQOEpQkKsBJT/zr7NEaKKUYJSsHCogdJbU6RFE1OHwWIndoauhMYtElQ+QxUNOPn8IhS6mdoYd+grujrm9iaV1YW8m0yZSPlMjEzHVyeREXQUZSpi4/nzA/kzE1TBojTygtRCQsP0JHURgfKz5KXSsxO4CMnR8oNCgyQCo0QUlWaCs2RDRBUSw3RD5MXUBOX0dWaUlYa11rfbzP5nJ7hiY0RB8qNh8oMi05RzdFVTZEU0dYazE9Skpbbk1ecVxvhTtHVVRleG2DmyY2RyQyQD5OX0NUZU5hdHWFlhgjLS9CUyUxPDlJWD5OXWuCmIuapr7W50VTXL7a677Y6b3X6LvV5r3Y6HaDikJMUGyDi6S5wWmFii03OF1pY3SDe32Ngz1FQHKAd0FKREdQSnuKgISXiY6ikqKtpG+EchpZISJnKzN5PHCpdw9JFBtcIiJjKCpvMS1yM0aPTUSHS16hZQo9DhVSGj2FQ1pxW3mPeqi6qWl1aMPFvv/3cf/eIf/nWP/oaP/XBP/aKP/dO//pef/pif/aTvm4Av/IJd+2RP/VV//FOee1O/+1CP+2GP+8J9moOP/JTP/LXP/QY//WfbqTQcabRuCxVf/NZf/+/P+hAP+oFP/Nfv/Ujf+2SPSOBt6BC9d/FP+nN//Dd//FfM9vAJNNAP+pR7pkE/+LIP+2df+gVaFDAMlPAKM+AOhlFc5dFZNSKdpTD9dZFfV7PB0QCsNMGRgHAXgqDNFbL29OQkgUBOBQHug2AM82DSsSC7tWOKNONVgUAzkVDGMVBO5QLNg+IJ0sF2wOAKU9M+ZjV7JDPN3JyKc3M7BYVFAMDJ4nJ6ErKqEuLsNFRM5eXsi0tO7a2pyUlJaOjv/+/gEBAf///yH5BAMAAP8ALAAAAAAQABAAAAitAP8JHEiwoEGBAhImPDhQACRIni4JYPhPgKeLlyRSFIAJU0SNBRUKsGRJUaVKEwkKuHcP38iSlRylRIivZj0BmzYlciRT5bt3COjh1OlI0syKP4MKePSokySjKuPFM1FiaVNJmkRWlEpVACVKjDRlBQLkR0J79kys8Ao264+3Q86mXTtp0qdIAoQI+RFXgAYNLNY2asQpkwAiRIL0LVGChQt/gwsLKFIkiA8BAQEAOw=="),
     ("Attack",                  "Att",     "data:image/gif;base64,R0lGODlhEAAQALMAAEY8L7u5A3huYVpQQ1BGOWRaTYJ4a3d7CXd3dwAAAP///wAAAAAAAAAAAAAAAAAAACH5BAEAAAoALAAAAAAQABAAAAQ+UMlJZbqp6otQ1hPXfaDokZV5gQpnnCwnwGWCFPRmD3mIIYRe6HAIHIS+YmAVAwCIqFTCmThEKYkl5urjaiIAOw=="),
@@ -86,6 +92,12 @@ HISCORES_PATH = "m=hiscore_oldschool/index_lite.ws"
 NEWS_PATH = "m=news/latest_news.rss"
 
 
+class ItemNotFound(Exception):
+    def __init__(self, msg, query):
+        self.msg = msg
+        self.query = query
+
+
 def hiscores(player):
     with rsapi.util.request(HISCORES_PATH, player=player) as resp:
         return rsapi.util.parse_scores(resp.text, SKILLS)
@@ -94,3 +106,28 @@ def hiscores(player):
 def news():
     with rsapi.util.request(NEWS_PATH, oldschool=True) as resp:
         return rsapi.util.parse_news(resp.text)
+
+
+def items(item_q: typing.Union[int, str]):
+    ret = []
+
+    if isinstance(item_q, int):
+        ret = [i for i in ITEMS if i.id == item_q]
+    elif isinstance(item_q, str):
+        r = re.compile(item_q, re.IGNORECASE)
+        ret = [
+            i for i in ITEMS if r.search(i.name) and \
+                                i.linked_id_item is None and \
+                                not i.duplicate
+        ]
+        # Maybe there is an exact match
+        exact = [i for i in ret if i.name.lower() == item_q.lower()]
+        if exact:
+            ret = exact
+    else:
+        raise Exception("Bad argument type")
+
+    if not ret:
+        raise ItemNotFound(f"No items found", item_q)
+
+    return ret
