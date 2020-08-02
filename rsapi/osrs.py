@@ -154,7 +154,7 @@ def _ge_price_normalize(price):
     }
     if isinstance(price, str):
         # 'price': '1.2b '
-        price = price.strip()
+        price = price.replace(" ", "")
         price = price.replace(",", "")
         try:
             multiplier = suffixes[price[-1]]
@@ -164,7 +164,7 @@ def _ge_price_normalize(price):
     return int(price)
 
 def _ge_parse(data):
-    def parse_current(node):
+    def parse_price_point(node):
         return {
             "price": _ge_price_normalize(node["price"]),
             "trend": node["trend"],
@@ -172,8 +172,8 @@ def _ge_parse(data):
 
     item = data["item"]
     return {
-        "current": parse_current(item["current"]),
-        "today": item["today"],
+        "current": parse_price_point(item["current"]),
+        "today": parse_price_point(item["today"]),
         "day30": item["day30"],
         "day90": item["day90"],
         "day180": item["day180"],
