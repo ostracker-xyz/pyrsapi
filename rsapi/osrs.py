@@ -155,12 +155,13 @@ def _ge_price_normalize(price):
     if isinstance(price, str):
         # 'price': '1.2b '
         price = price.strip()
+        price = price.replace(",", "")
         try:
             multiplier = suffixes[price[-1]]
             price = multiplier * float(price[:-1])
         except KeyError:
             pass
-    return price
+    return int(price)
 
 def _ge_parse(data):
     def parse_current(node):
