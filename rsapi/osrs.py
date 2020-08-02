@@ -146,10 +146,32 @@ def alch(item_q: typing.Union[int, str], maxitems: int = 10) -> dict:
     }
 
 
+def _ge_price_normalize(price):
+    suffixes = {
+        "k": 10**3,
+        "m": 10**6,
+        "b": 10**9,
+    }
+    if isinstance(price, str):
+        # 'price': '1.2b '
+        price = price.strip()
+        try:
+            multiplier = suffixes[price[-1]]
+            price = multiplier * float(price[:-1])
+        except IndexError:
+            pass
+    return price
+
 def _ge_parse(data):
+    def parse_current(node):
+        return {
+            "price": _ge_price_normalize(node["price"]),
+            "trend": node["trend"],
+        }
+
     item = data["item"]
     return {
-        "current": item["current"],
+        "current": parse_current(item["current"]),
         "today": item["today"],
         "day30": item["day30"],
         "day90": item["day90"],
