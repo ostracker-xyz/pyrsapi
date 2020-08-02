@@ -2,6 +2,7 @@ import re
 import typing
 
 from osrsbox import items_api
+from osrsbox.items_api.item_properties import ItemProperties
 
 import rsapi.util
 
@@ -98,17 +99,17 @@ class ItemNotFound(Exception):
         self.query = query
 
 
-def hiscores(player: str):
+def hiscores(player: str) -> dict:
     with rsapi.util.request(HISCORES_PATH, player=player) as resp:
         return rsapi.util.parse_scores(resp.text, SKILLS)
 
 
-def news():
+def news() -> dict:
     with rsapi.util.request(NEWS_PATH, oldschool=True) as resp:
         return rsapi.util.parse_news(resp.text)
 
 
-def items(item_q: typing.Union[int, str]):
+def items(item_q: typing.Union[int, str]) -> typing.List[ItemProperties]:
     ret = []
 
     if isinstance(item_q, int):
