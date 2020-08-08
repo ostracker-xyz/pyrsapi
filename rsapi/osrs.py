@@ -100,6 +100,15 @@ class ItemError(Exception):
         self.query = query
 
 
+class TooManyResults(ItemError):
+    def __init__(self, msg, query, items):
+        super().__init__(msg, query)
+        self.items = items
+
+    def __str__(self):
+        return f"TooManyResults: ('{self.msg}', '{self.query}', #'{len(self.items)}')"
+
+
 def hiscores(player: str) -> dict:
     with rsapi.util.request(HISCORES_PATH, player=player) as resp:
         return rsapi.util.parse_scores(resp.text, SKILLS)
@@ -110,39 +119,44 @@ def news() -> dict:
         return rsapi.util.parse_news(resp.text)
 
 
-def items(item_q: typing.Union[int, str],
-          maxitems: int = 10) -> typing.List[ItemProperties]:
-    ret = []
-
+def _items_iter(item_q: typing.Union[int, str]):
     if isinstance(item_q, int):
-        ret = [i for i in ITEMS if i.id == item_q]
+        for item in ITEMS:
+            if item.id == item_q:
+                yield item
     elif isinstance(item_q, str):
         r = re.compile(item_q, re.IGNORECASE)
-        ret = [
-            i for i in ITEMS if r.search(i.name) and \
-                                i.linked_id_item is None and \
-                                not i.duplicate
-        ]
-        # Maybe there is an exact match
-        exact = [i for i in ret if i.name.lower() == item_q.lower()]
-        if exact:
-            ret = exact
+        for item in ITEMS:
+            if item.linked_id_item is not None:
+                continue
+            if item.duplicate:
+                continue
+            if item.name.lower() == item_q.lower():
+                yield item
+            elif r.search(item.name):
+                yield item
     else:
         raise Exception("Bad argument type")
 
+
+def items(item_q: typing.Union[int, str]) -> typing.List[ItemProperties]:
+    ret = list(_items_iter(item_q))
     if not ret:
         raise ItemError("No items found", item_q)
+    return ret
 
-    return ret[:maxitems]
 
+def alch(item_q: typing.Union[int, str]) -> dict:
+    items_= items(item_q)
+    if not items_:
+        raise ItemError("No matching items found", item_q)
 
-def alch(item_q: typing.Union[int, str], maxitems: int = 10) -> dict:
     return {
         i.id: {
             "name": i.name,
             "highalch": i.highalch,
             "lowalch": i.lowalch,
-        } for i in items(item_q, maxitems=maxitems)
+        } for i in items_
     }
 
 
@@ -185,10 +199,12 @@ def _ge_get(id_):
         return _ge_parse(resp.json())
 
 
-def ge(item_q: typing.Union[int, str], maxitems: int = 10) -> dict:
-    items_ = [i for i in items(item_q, maxitems=maxitems) if i.tradeable_on_ge]
+def ge(item_q: typing.Union[int, str], limit=10) -> dict:
+    items_ = [i for i in items(item_q) if i.tradeable_on_ge]
     if not items_:
         raise ItemError("No tradeable items found", item_q)
+    if len(items_) > limit:
+        raise TooManyResults("Too many results", item_q, items_)
 
     return {
         i.id: {
@@ -199,9 +215,15 @@ def ge(item_q: typing.Union[int, str], maxitems: int = 10) -> dict:
     }
 
 
-def price(item_q: typing.Union[int, str], maxitems=10) -> dict:
+def price(item_q: typing.Union[int, str], limit=10) -> dict:
+    items_ = items(item_q)
+    if not items_:
+        raise ItemError("No matching items found", item_q)
+    if len(items_) > limit:
+        raise TooManyResults("Too many results", item_q, items_)
+
     ret = {}
-    for item in items(item_q, maxitems=maxitems):
+    for item in items_:
         entry = {
             "name": item.name,
             "tradeable": item.tradeable,
@@ -214,4 +236,5 @@ def price(item_q: typing.Union[int, str], maxitems=10) -> dict:
         if item.tradeable_on_ge:
             entry["ge"] = _ge_get(item.id)
         ret[item.id] = entry
+
     return ret
