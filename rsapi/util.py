@@ -104,9 +104,12 @@ def parse_news(text):
             "description": node.findtext("./description"),
             "ttl": int(node.findtext("./ttl")),
             "updated": parse_datetime(node.find("./lastBuildDate")),
-            "items": [
-                parse_item(item) for item in node.findall("./item")
-            ]
+            "items": sorted(
+                [
+                    parse_item(item) for item in node.findall("./item")
+                ],
+                key=lambda x: -x["updated"],
+            )
         }
 
     root = ElementTree.fromstring(text)
