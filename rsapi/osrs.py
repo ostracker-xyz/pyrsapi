@@ -90,6 +90,7 @@ SKILLS = [
     "Zulrah",
 ]
 HISCORES_PATH = "m=hiscore_oldschool/index_lite.ws"
+HISCORES_LEAGUES_PATH = "m=hiscore_oldschool_seasonal/index_lite.ws"
 NEWS_PATH = "m=news/latest_news.rss"
 GE_PATH = "m=itemdb_oldschool/api/catalogue/detail.json"
 
@@ -109,9 +110,17 @@ class TooManyResults(ItemError):
         return f"TooManyResults: ('{self.msg}', '{self.query}', #'{len(self.items)}')"
 
 
-def hiscores(player: str) -> dict:
-    with rsapi.util.request(HISCORES_PATH, player=player) as resp:
+def _hiscores(player: str, path: str):
+    with rsapi.util.request(path, player=player) as resp:
         return rsapi.util.parse_scores(resp.text, SKILLS)
+
+
+def hiscores(player: str) -> dict:
+    return _hiscores(player, HISCORES_PATH)
+
+
+def hiscores_leagues(player: str) -> dict:
+    return _hiscores(player, HISCORES_LEAGUES_PATH)
 
 
 def news() -> dict:
