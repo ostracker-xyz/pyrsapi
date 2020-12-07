@@ -17,7 +17,13 @@ def request(path, _retries=DEFAULT_RETRIES, _timeout=DEFAULT_TIMEOUT, **query):
     for i in range(1, _retries+1):
         started_at = time.monotonic()
         try:
-            resp = requests.get(url, timeout=_timeout)
+            resp = requests.get(
+                url,
+                timeout=_timeout,
+                headers={
+                    "User-Agent": "python-rsapi (Python RS API library)"
+                }
+            )
         except requests.exceptions.Timeout:
             resp = None
         ended_at = time.monotonic()
