@@ -44,6 +44,7 @@ SKILLS = [
     ("Clue Scrolls (elite)",    "Clue [Elite]",    ""),
     ("Clue Scrolls (master)",   "Clue [Master]",   ""),
     "LMS - Rank",
+    "Soul Wars Zeal",
     "Abyssal Sire",
     "Alchemical Hydra",
     ("Barrows Chests",          "Barrows",         ""),
